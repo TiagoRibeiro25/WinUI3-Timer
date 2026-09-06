@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "WinUI3-Timer (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "WinUI3-Timer (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
