@@ -1,38 +1,63 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+﻿using System.Runtime.ExceptionServices;
+using Microsoft.UI.Xaml;
 
 namespace WinUI3_Timer;
 
-/// <summary>
-/// Provides application-specific behavior to supplement the default Application class.
-/// </summary>
 public partial class App : Application
 {
     private Window? _window;
-    
-    /// <summary>
-    /// Initializes the singleton application object.  This is the first line of authored code
-    /// executed, and as such is the logical equivalent of main() or WinMain().
-    /// </summary>
+
+    private static readonly string LogFolder = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "WinUI3-Timer");
+
     public App()
     {
         InitializeComponent();
+
+       UnhandledException += OnUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
     }
 
-    /// <summary>
-    /// Invoked when the application is launched.
-    /// </summary>
-    /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         _window = new MainWindow();
         _window.Activate();
+    }
+
+    private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    {
+        e.Handled = true;
+        WriteCrashLog(e.Exception);
+    }
+
+    private void OnDomainUnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+            WriteCrashLog(ex);
+    }
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        WriteCrashLog(e.Exception);
+    }
+
+    private static void WriteCrashLog(Exception exception)
+    {
+        try
+        {
+            Directory.CreateDirectory(LogFolder);
+            var filePath = Path.Combine(LogFolder, "crash.log");
+            var message = $"""
+                [{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss}] Unhandled Exception
+                {exception}
+                """;
+            File.AppendAllText(filePath, message + Environment.NewLine + Environment.NewLine);
+        }
+        catch
+        {
+            // Swallow logging failures
+        }
     }
 }
