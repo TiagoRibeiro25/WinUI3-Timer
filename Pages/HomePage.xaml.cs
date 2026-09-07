@@ -24,7 +24,6 @@ public sealed partial class HomePage : Page
         }
     }
 
-    private void OnLoaded(object sender, RoutedEventArgs e) { }
     private async void OnUnloaded(object sender, RoutedEventArgs e)
     {
         if (ViewModel != null)

@@ -1,5 +1,4 @@
-﻿using System.Runtime.ExceptionServices;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 
 namespace WinUI3_Timer;
 

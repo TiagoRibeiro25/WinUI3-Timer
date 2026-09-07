@@ -1,5 +1,4 @@
 using System.Collections.Specialized;
-using System.Threading.Tasks;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
