@@ -25,7 +25,11 @@ public sealed partial class HomePage : Page
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e) { }
-    private void OnUnloaded(object sender, RoutedEventArgs e) => ViewModel?.Save();
+    private async void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel != null)
+            await ViewModel.SaveAsync();
+    }
 
     private void OnStartClick(object sender, RoutedEventArgs e) => ViewModel?.Start();
     private void OnStopClick(object sender, RoutedEventArgs e) => ViewModel?.Stop();

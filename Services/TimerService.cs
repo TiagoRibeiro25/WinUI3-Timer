@@ -8,16 +8,16 @@ public static class TimerService
 {
     private const string FileName = "timers.json";
 
-    public static List<TimerModel> LoadTimers()
+    public static async Task<List<TimerModel>> LoadTimersAsync()
     {
         try
         {
             var folder = ApplicationData.Current.LocalFolder;
-            var file = folder.TryGetItemAsync(FileName).AsTask().GetAwaiter().GetResult() as StorageFile;
+            var file = await folder.TryGetItemAsync(FileName) as StorageFile;
             if (file == null)
                 return [CreateDefaultTimer()];
 
-            var json = File.ReadAllText(file.Path);
+            var json = await File.ReadAllTextAsync(file.Path);
             var timers = JsonSerializer.Deserialize<List<TimerModel>>(json);
             if (timers == null || timers.Count == 0)
                 return [CreateDefaultTimer()];
@@ -41,13 +41,12 @@ public static class TimerService
         }
     }
 
-    public static void SaveTimers(List<TimerModel> timers)
+    public static async Task SaveTimersAsync(List<TimerModel> timers)
     {
         var folder = ApplicationData.Current.LocalFolder;
-        var file = folder.CreateFileAsync(FileName, CreationCollisionOption.ReplaceExisting)
-            .AsTask().GetAwaiter().GetResult();
+        var file = await folder.CreateFileAsync(FileName, CreationCollisionOption.ReplaceExisting);
         var json = JsonSerializer.Serialize(timers, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(file.Path, json);
+        await File.WriteAllTextAsync(file.Path, json);
     }
 
     private static TimerModel CreateDefaultTimer() => new() { Name = "Timer 1" };

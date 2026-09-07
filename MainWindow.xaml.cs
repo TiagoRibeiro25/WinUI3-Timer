@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using System.Threading.Tasks;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,6 +22,13 @@ public sealed partial class MainWindow : Window
         SetTitleBar(AppTitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         AppWindow.SetIcon("Assets/AppIcon.ico");
+
+        _ = OnLoadedAsync();
+    }
+
+    private async Task OnLoadedAsync()
+    {
+        await ViewModel.InitializeAsync();
 
         ViewModel.Timers.CollectionChanged += OnTimersCollectionChanged;
         foreach (var timer in ViewModel.Timers)

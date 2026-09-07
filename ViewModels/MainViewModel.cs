@@ -13,7 +13,7 @@ public class MainViewModel : INotifyPropertyChanged
     private TimerModel? _selectedTimer;
     private string _currentTime = "00:00:00";
 
-    public ObservableCollection<TimerModel> Timers { get; }
+    public ObservableCollection<TimerModel> Timers { get; } = [];
     public bool HasMultipleTimers => Timers.Count > 1;
 
     public TimerModel? SelectedTimer
@@ -43,13 +43,18 @@ public class MainViewModel : INotifyPropertyChanged
 
     public MainViewModel()
     {
-        Timers = new ObservableCollection<TimerModel>(TimerService.LoadTimers());
-        RefreshIndices();
-        SelectedTimer = Timers.FirstOrDefault();
-
         _tickTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _tickTimer.Tick += OnTick;
         _tickTimer.Start();
+    }
+
+    public async Task InitializeAsync()
+    {
+        var timers = await TimerService.LoadTimersAsync();
+        foreach (var timer in timers)
+            Timers.Add(timer);
+        RefreshIndices();
+        SelectedTimer = Timers.FirstOrDefault();
     }
 
     public void Start()
@@ -58,7 +63,7 @@ public class MainViewModel : INotifyPropertyChanged
         _selectedTimer.IsRunning = true;
         _selectedTimer.LastStartTime = DateTimeOffset.UtcNow;
         OnPropertyChanged(nameof(IsRunning));
-        Save();
+        _ = SaveAsync();
     }
 
     public void Stop()
@@ -72,7 +77,7 @@ public class MainViewModel : INotifyPropertyChanged
         _selectedTimer.LastStartTime = null;
         OnPropertyChanged(nameof(IsRunning));
         UpdateDisplay();
-        Save();
+        _ = SaveAsync();
     }
 
     public void Reset()
@@ -83,7 +88,7 @@ public class MainViewModel : INotifyPropertyChanged
         _selectedTimer.LastStartTime = null;
         OnPropertyChanged(nameof(IsRunning));
         UpdateDisplay();
-        Save();
+        _ = SaveAsync();
     }
 
     public void AddTimer(string name)
@@ -93,7 +98,7 @@ public class MainViewModel : INotifyPropertyChanged
         RefreshIndices();
         OnPropertyChanged(nameof(HasMultipleTimers));
         SelectedTimer = timer;
-        Save();
+        _ = SaveAsync();
     }
 
     public void RenameTimer(string name)
@@ -101,7 +106,7 @@ public class MainViewModel : INotifyPropertyChanged
         if (_selectedTimer == null) return;
         _selectedTimer.Name = name;
         OnPropertyChanged(nameof(SelectedTimerName));
-        Save();
+        _ = SaveAsync();
     }
 
     public void DeleteTimer()
@@ -112,7 +117,7 @@ public class MainViewModel : INotifyPropertyChanged
         RefreshIndices();
         OnPropertyChanged(nameof(HasMultipleTimers));
         SelectedTimer = Timers[Math.Min(index, Timers.Count - 1)];
-        Save();
+        _ = SaveAsync();
     }
 
     private void RefreshIndices()
@@ -121,7 +126,7 @@ public class MainViewModel : INotifyPropertyChanged
             Timers[i].Index = i + 1;
     }
 
-    public void Save() => TimerService.SaveTimers(Timers.ToList());
+    public async Task SaveAsync() => await TimerService.SaveTimersAsync(Timers.ToList());
 
     private void OnTick(object? sender, object e) => UpdateDisplay();
 
